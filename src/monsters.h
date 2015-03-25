@@ -21,6 +21,7 @@
 #define FS_MONSTERS_H_776E8327BCE2450EB7C4A260785E6C0D
 
 #include "creature.h"
+#include "spells.h"
 
 #define MAX_LOOTCHANCE 100000
 #define MAX_STATICWALK 100
@@ -74,7 +75,7 @@ class MonsterType
 {
 	public:
 		MonsterType();
-		~MonsterType();
+		~MonsterType() = default;
 
 		// non-copyable
 		MonsterType(const MonsterType&) = delete;
@@ -154,8 +155,7 @@ class Monsters
 {
 	public:
 		Monsters();
-		~Monsters();
-
+		~Monsters() = default;
 		// non-copyable
 		Monsters(const Monsters&) = delete;
 		Monsters& operator=(const Monsters&) = delete;

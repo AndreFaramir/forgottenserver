@@ -23,7 +23,6 @@
 #include "monster.h"
 #include "container.h"
 #include "tools.h"
-#include "spells.h"
 #include "combat.h"
 #include "luascript.h"
 #include "weapons.h"
@@ -102,11 +101,6 @@ void MonsterType::reset()
 	thinkEvent = -1;
 
 	scriptList.clear();
-}
-
-MonsterType::~MonsterType()
-{
-	reset();
 }
 
 uint32_t Monsters::getLootRandom()
@@ -234,11 +228,6 @@ bool MonsterType::createLootContainer(Container* parent, const LootBlock& lootbl
 Monsters::Monsters()
 {
 	loaded = false;
-}
-
-Monsters::~Monsters()
-{
-
 }
 
 bool Monsters::loadFromXml(bool reloading /*= false*/)
