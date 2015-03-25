@@ -62,14 +62,7 @@ void MonsterType::reset()
 	health = 100;
 	healthMax = 100;
 
-	outfit.lookHead = 0;
-	outfit.lookBody = 0;
-	outfit.lookLegs = 0;
-	outfit.lookFeet = 0;
-	outfit.lookType = 0;
-	outfit.lookTypeEx = 0;
-	outfit.lookAddons = 0;
-	outfit.lookMount = 0;
+	//No need to initialize outfit
 	lookcorpse = 0;
 
 	skull = SKULL_NONE;
@@ -252,7 +245,6 @@ bool MonsterType::createLootContainer(Container* parent, const LootBlock& lootbl
 Monsters::Monsters()
 {
 	loaded = false;
-	scriptInterface = nullptr;
 }
 
 Monsters::~Monsters()
@@ -260,7 +252,6 @@ Monsters::~Monsters()
 	for (const auto& it : monsters) {
 		delete it.second;
 	}
-	delete scriptInterface;
 }
 
 bool Monsters::loadFromXml(bool reloading /*= false*/)
@@ -279,14 +270,14 @@ bool Monsters::loadFromXml(bool reloading /*= false*/)
 
 	if (!monsterScriptList.empty()) {
 		if (!scriptInterface) {
-			scriptInterface = new LuaScriptInterface("Monster Interface");
+			scriptInterface.reset(new LuaScriptInterface("Monster Interface"));
 			scriptInterface->initState();
 		}
 
 		for (const auto& scriptEntry : monsterScriptList) {
 			MonsterType* mType = scriptEntry.first;
 			if (scriptInterface->loadFile("data/monster/scripts/" + scriptEntry.second) == 0) {
-				mType->scriptInterface = scriptInterface;
+				mType->scriptInterface = scriptInterface.get();
 				mType->creatureAppearEvent = scriptInterface->getEvent("onCreatureAppear");
 				mType->creatureDisappearEvent = scriptInterface->getEvent("onCreatureDisappear");
 				mType->creatureMoveEvent = scriptInterface->getEvent("onCreatureMove");
@@ -305,8 +296,7 @@ bool Monsters::reload()
 {
 	loaded = false;
 
-	delete scriptInterface;
-	scriptInterface = nullptr;
+	scriptInterface.reset(); 
 	monsterScriptList.clear();
 
 	return loadFromXml(true);
@@ -326,14 +316,6 @@ ConditionDamage* Monsters::getDamageCondition(ConditionType_t conditionType,
 
 bool Monsters::deserializeSpell(const pugi::xml_node& node, spellBlock_t& sb, const std::string& description)
 {
-	sb.chance = 100;
-	sb.speed = 2000;
-	sb.range = 0;
-	sb.minCombatValue = 0;
-	sb.maxCombatValue = 0;
-	sb.combatSpell = false;
-	sb.isMelee = false;
-
 	std::string name;
 	std::string scriptName;
 	bool isScripted;

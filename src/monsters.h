@@ -55,14 +55,14 @@ struct summonBlock_t {
 class BaseSpell;
 
 struct spellBlock_t {
-	BaseSpell* spell;
-	uint32_t chance;
-	uint32_t speed;
-	uint32_t range;
-	int32_t minCombatValue;
-	int32_t maxCombatValue;
-	bool combatSpell;
-	bool isMelee;
+	BaseSpell* spell = nullptr;
+	uint32_t chance = 100;
+	uint32_t speed = 2000;
+	uint32_t range = 0;
+	int32_t minCombatValue = 0;
+	int32_t maxCombatValue = 0;
+	bool combatSpell = false;
+	bool isMelee = false;
 };
 
 struct voiceBlock_t {
@@ -182,7 +182,7 @@ class Monsters
 		std::map<std::string, uint32_t> monsterNames;
 		std::map<MonsterType*, std::string> monsterScriptList;
 		std::map<uint32_t, MonsterType*> monsters;
-		LuaScriptInterface* scriptInterface;
+		std::unique_ptr<LuaScriptInterface> scriptInterface;
 
 		bool loaded;
 };
