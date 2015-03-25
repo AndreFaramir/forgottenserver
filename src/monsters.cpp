@@ -238,9 +238,7 @@ Monsters::Monsters()
 
 Monsters::~Monsters()
 {
-	for (const auto& it : monsters) {
-		delete it.second;
-	}
+
 }
 
 bool Monsters::loadFromXml(bool reloading /*= false*/)
@@ -707,17 +705,7 @@ bool Monsters::loadMonster(const std::string& file, const std::string& monster_n
 {
 	MonsterType* mType = nullptr;
 	bool new_mType = true;
-
-	if (reloading) {
-		uint32_t id = getIdByName(monster_name);
-		if (id != 0) {
-			mType = getMonsterType(id);
-			if (mType != nullptr) {
-				new_mType = false;
-				mType->reset();
-			}
-		}
-	}
+	static uint32_t id = 0;
 
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file(file.c_str());
@@ -738,9 +726,25 @@ bool Monsters::loadMonster(const std::string& file, const std::string& monster_n
 		return false;
 	}
 
-	if (mType == nullptr) {
-		mType = new MonsterType();
+	if (reloading) {
+		uint32_t id = getIdByName(monster_name);
+		if (id != 0) {
+			mType = getMonsterType(id);
+			if (mType != nullptr) {
+				new_mType = false;
+				mType->reset();
+			}
+		}
 	}
+
+	if (new_mType) {
+		std::string lowername = monster_name;
+		toLowerCaseString(lowername);
+
+		monsterNames[lowername] = ++id;
+		mType = &monsters[id];
+	}
+
 	mType->name = attr.as_string();
 
 	if ((attr = monsterNode.attribute("nameDescription"))) {
@@ -1165,14 +1169,6 @@ bool Monsters::loadMonster(const std::string& file, const std::string& monster_n
 		}
 	}
 
-	static uint32_t id = 0;
-	if (new_mType) {
-		std::string lowername = monster_name;
-		toLowerCaseString(lowername);
-
-		monsterNames[lowername] = ++id;
-		monsters[id] = mType;
-	}
 	mType->shrinkToFit();
 	return true;
 }
@@ -1249,7 +1245,7 @@ MonsterType* Monsters::getMonsterType(uint32_t mid)
 	if (it == monsters.end()) {
 		return nullptr;
 	}
-	return it->second;
+	return &it->second;
 }
 
 uint32_t Monsters::getIdByName(const std::string& name)

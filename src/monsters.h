@@ -146,7 +146,7 @@ class MonsterType
 		bool createLootContainer(Container* parent, const LootBlock& lootblock);
 		std::vector<Item*> createLootItem(const LootBlock& lootBlock);
 		void shrinkToFit() {
-			shrinkVectors(summonList, lootItems, spellAttackList, spellDefenseList, voiceVector);
+			shrinkVectors(summonList, lootItems, spellAttackList, spellDefenseList, voiceVector, scriptList);
 		}	
 };
 
@@ -184,7 +184,7 @@ class Monsters
 
 		std::map<std::string, uint32_t> monsterNames;
 		std::map<MonsterType*, std::string> monsterScriptList;
-		std::map<uint32_t, MonsterType*> monsters;
+		std::map<uint32_t, MonsterType> monsters;
 		std::unique_ptr<LuaScriptInterface> scriptInterface;
 
 		bool loaded;
