@@ -55,7 +55,7 @@ struct summonBlock_t {
 class BaseSpell;
 
 struct spellBlock_t {
-	BaseSpell* spell = nullptr;
+	ToggledPtr<BaseSpell> spell;
 	uint32_t chance = 100;
 	uint32_t speed = 2000;
 	uint32_t range = 0;
@@ -87,10 +87,10 @@ class MonsterType
 		std::vector<voiceBlock_t> voiceVector;
 
 		std::list<LootBlock> lootItems;
-		std::list<std::string> scriptList;
-		std::list<spellBlock_t> spellAttackList;
-		std::list<spellBlock_t> spellDefenseList;
-		std::list<summonBlock_t> summonList;
+		std::vector<std::string> scriptList;
+		std::vector<spellBlock_t> spellAttackList;
+		std::vector<spellBlock_t> spellDefenseList;
+		std::vector<summonBlock_t> summonList;
 
 		std::string name;
 		std::string nameDescription;

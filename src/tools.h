@@ -94,4 +94,76 @@ inline int64_t OTSYS_TIME()
 	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
+template<typename T>
+class ToggledPtr final
+{
+public:
+	ToggledPtr() = default;
+
+	ToggledPtr(const ToggledPtr<T>&) = delete;
+	
+	ToggledPtr(ToggledPtr<T>&& other):
+		m_ptr(other.m_ptr),
+		m_hasOwnership(other.m_hasOwnership) 
+	{
+		other.m_ptr = nullptr;
+		other.m_hasOwnership = false;
+	}
+
+	ToggledPtr(T* ptr, const bool takeOwnership = true):
+		m_ptr(ptr),
+		m_hasOwnership(takeOwnership) {}
+
+	~ToggledPtr() {
+		dealloc();
+	}
+
+	void reset(T* ptr = nullptr, const bool takeOwnership = true) {
+		dealloc();
+		m_ptr = ptr;
+		m_hasOwnership = takeOwnership;
+	}
+
+	void dealloc() {
+		if (m_hasOwnership) {
+			delete m_ptr;
+		}
+	}
+
+	T* release() {
+		m_hasOwnership = false;
+		auto ret = m_ptr;
+		m_ptr = nullptr;
+		return ret;
+	}
+	
+	T* get() const {
+		return m_ptr;
+	}
+	
+	bool isOwner() const {
+		return m_hasOwnership;
+	}
+	
+	T* operator->() const {
+		return m_ptr;
+	}
+	
+	T& operator*() const {
+		return *m_ptr;
+	}
+	
+	ToggledPtr& operator=(T* ptr) {
+		reset(ptr);
+		return *this;
+	}
+	
+	operator bool() const {
+		return m_ptr;
+	}
+private:
+	T* m_ptr = nullptr;
+	bool m_hasOwnership = false;
+};
+
 #endif

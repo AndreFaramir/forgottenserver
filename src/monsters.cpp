@@ -84,18 +84,7 @@ void MonsterType::reset()
 	lootItems.clear();
 	elementMap.clear();
 
-	for (const spellBlock_t& spellBlock : spellAttackList) {
-		if (spellBlock.combatSpell) {
-			delete spellBlock.spell;
-		}
-	}
 	spellAttackList.clear();
-
-	for (const spellBlock_t& spellBlock : spellDefenseList) {
-		if (spellBlock.combatSpell) {
-			delete spellBlock.spell;
-		}
-	}
 	spellDefenseList.clear();
 
 	yellSpeedTicks = 0;
@@ -366,8 +355,8 @@ bool Monsters::deserializeSpell(const pugi::xml_node& node, spellBlock_t& sb, co
 		}
 	}
 
-	sb.spell = g_spells->getSpellByName(name);
-	if (sb.spell) {
+	if (auto spell = g_spells->getSpellByName(name)) {
+		sb.spell.reset(spell, false); //Don't take ownership here to avoid double-deletes and use-after-delete
 		return true;
 	}
 
@@ -920,7 +909,7 @@ bool Monsters::loadMonster(const std::string& file, const std::string& monster_n
 		for (pugi::xml_node attackNode = node.first_child(); attackNode; attackNode = attackNode.next_sibling()) {
 			spellBlock_t sb;
 			if (deserializeSpell(attackNode, sb, monster_name)) {
-				mType->spellAttackList.push_back(sb);
+				mType->spellAttackList.emplace_back(std::move(sb));
 			} else {
 				std::cout << "[Warning - Monsters::loadMonster] Cant load spell. " << file << std::endl;
 			}
@@ -939,7 +928,7 @@ bool Monsters::loadMonster(const std::string& file, const std::string& monster_n
 		for (pugi::xml_node defenseNode = node.first_child(); defenseNode; defenseNode = defenseNode.next_sibling()) {
 			spellBlock_t sb;
 			if (deserializeSpell(defenseNode, sb, monster_name)) {
-				mType->spellDefenseList.push_back(sb);
+				mType->spellDefenseList.emplace_back(std::move(sb));
 			} else {
 				std::cout << "[Warning - Monsters::loadMonster] Cant load spell. " << file << std::endl;
 			}
