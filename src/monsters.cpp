@@ -124,7 +124,7 @@ void MonsterType::createLoot(Container* corpse)
 	Player* owner = g_game.getPlayerByID(corpse->getCorpseOwner());
 	if (!owner || owner->getStaminaMinutes() > 840) {
 		for (auto it = lootItems.rbegin(), end = lootItems.rend(); it != end; ++it) {
-			std::list<Item*> itemList = createLootItem(*it);
+			auto itemList = createLootItem(*it);
 			if (itemList.empty()) {
 				continue;
 			}
@@ -167,7 +167,7 @@ void MonsterType::createLoot(Container* corpse)
 	corpse->startDecaying();
 }
 
-std::list<Item*> MonsterType::createLootItem(const LootBlock& lootBlock)
+std::vector<Item*> MonsterType::createLootItem(const LootBlock& lootBlock)
 {
 	int32_t itemCount = 0;
 
@@ -180,7 +180,7 @@ std::list<Item*> MonsterType::createLootItem(const LootBlock& lootBlock)
 		}
 	}
 
-	std::list<Item*> itemList;
+	std::vector<Item*> itemList;
 	while (itemCount > 0) {
 		uint16_t n = static_cast<uint16_t>(std::min<int32_t>(itemCount, 100));
 		Item* tmpItem = Item::CreateItem(lootBlock.id, n);
@@ -202,9 +202,9 @@ std::list<Item*> MonsterType::createLootItem(const LootBlock& lootBlock)
 			tmpItem->setText(lootBlock.text);
 		}
 
-		itemList.push_back(tmpItem);
+		itemList.emplace_back(tmpItem);
 	}
-	return itemList;
+	return std::move(itemList);
 }
 
 bool MonsterType::createLootContainer(Container* parent, const LootBlock& lootblock)
@@ -215,7 +215,7 @@ bool MonsterType::createLootContainer(Container* parent, const LootBlock& lootbl
 	}
 
 	for (; it != end && parent->size() < parent->capacity(); ++it) {
-		std::list<Item*> itemList = createLootItem(*it);
+		auto itemList = createLootItem(*it);
 		for (Item* tmpItem : itemList) {
 			if (Container* container = tmpItem->getContainer()) {
 				if (!createLootContainer(container, *it)) {
@@ -1081,7 +1081,7 @@ bool Monsters::loadMonster(const std::string& file, const std::string& monster_n
 			} else {
 				vb.yellText = false;
 			}
-			mType->voiceVector.push_back(vb);
+			mType->voiceVector.emplace_back(vb);
 		}
 	}
 
@@ -1089,7 +1089,7 @@ bool Monsters::loadMonster(const std::string& file, const std::string& monster_n
 		for (pugi::xml_node lootNode = node.first_child(); lootNode; lootNode = lootNode.next_sibling()) {
 			LootBlock lootBlock;
 			if (loadLootItem(lootNode, lootBlock)) {
-				mType->lootItems.push_back(lootBlock);
+				mType->lootItems.emplace_back(std::move(lootBlock));
 			} else {
 				std::cout << "[Warning - Monsters::loadMonster] Cant load loot. " << file << std::endl;
 			}
@@ -1148,7 +1148,7 @@ bool Monsters::loadMonster(const std::string& file, const std::string& monster_n
 				sb.name = attr.as_string();
 				sb.speed = speed;
 				sb.chance = chance;
-				mType->summonList.push_back(sb);
+				mType->summonList.emplace_back(sb);
 			} else {
 				std::cout << "[Warning - Monsters::loadMonster] Missing summon name. " << file << std::endl;
 			}
@@ -1158,7 +1158,7 @@ bool Monsters::loadMonster(const std::string& file, const std::string& monster_n
 	if ((node = monsterNode.child("script"))) {
 		for (pugi::xml_node eventNode = node.first_child(); eventNode; eventNode = eventNode.next_sibling()) {
 			if ((attr = eventNode.attribute("name"))) {
-				mType->scriptList.push_back(attr.as_string());
+				mType->scriptList.emplace_back(attr.as_string());
 			} else {
 				std::cout << "[Warning - Monsters::loadMonster] Missing name for script event. " << file << std::endl;
 			}
@@ -1173,6 +1173,7 @@ bool Monsters::loadMonster(const std::string& file, const std::string& monster_n
 		monsterNames[lowername] = ++id;
 		monsters[id] = mType;
 	}
+	mType->shrinkToFit();
 	return true;
 }
 
@@ -1228,7 +1229,7 @@ void Monsters::loadLootContainer(const pugi::xml_node& node, LootBlock& lBlock)
 	for (pugi::xml_node subNode = node.first_child(); subNode; subNode = subNode.next_sibling()) {
 		LootBlock lootBlock;
 		if (loadLootItem(subNode, lootBlock)) {
-			lBlock.childLoot.push_back(lootBlock);
+			lBlock.childLoot.emplace_back(std::move(lootBlock));
 		}
 	}
 }

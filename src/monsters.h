@@ -35,7 +35,7 @@ struct LootBlock {
 	int32_t actionId;
 	std::string text;
 
-	std::list<LootBlock> childLoot;
+	std::vector<LootBlock> childLoot;
 	LootBlock() {
 		id = 0;
 		countmax = 0;
@@ -86,7 +86,7 @@ class MonsterType
 
 		std::vector<voiceBlock_t> voiceVector;
 
-		std::list<LootBlock> lootItems;
+		std::vector<LootBlock> lootItems;
 		std::vector<std::string> scriptList;
 		std::vector<spellBlock_t> spellAttackList;
 		std::vector<spellBlock_t> spellDefenseList;
@@ -144,7 +144,10 @@ class MonsterType
 
 		void createLoot(Container* corpse);
 		bool createLootContainer(Container* parent, const LootBlock& lootblock);
-		std::list<Item*> createLootItem(const LootBlock& lootblock);
+		std::vector<Item*> createLootItem(const LootBlock& lootBlock);
+		void shrinkToFit() {
+			shrinkVectors(summonList, lootItems, spellAttackList, spellDefenseList, voiceVector);
+		}	
 };
 
 class Monsters

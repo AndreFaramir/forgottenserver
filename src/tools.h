@@ -166,4 +166,17 @@ private:
 	bool m_hasOwnership = false;
 };
 
+template <typename T, typename... Args>
+void shrinkVectors(std::vector<T>& first)
+{
+	first.shrink_to_fit();
+}
+
+template <typename T, typename... Args>
+void shrinkVectors(std::vector<T>& first,  std::vector<Args>&... args) 
+{
+	first.shrink_to_fit();
+	shrinkVectors(args...);
+}
+
 #endif
